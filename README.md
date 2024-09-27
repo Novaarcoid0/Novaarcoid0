@@ -7,6 +7,8 @@ this is ny first code repository in github
 * how to orgaize notes or categorize them
 * how to add code files
 * i do coding in scratch... 
+* NOTE: this is a line i added from my local machine
+
 
 <!--
 **Novaarcoid0/Novaarcoid0** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
