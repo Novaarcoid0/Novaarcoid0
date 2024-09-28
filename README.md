@@ -1,6 +1,6 @@
 ## Hi there 👋
 
-this is ny first code repository in github
+this is my first code repository in github
 <br/>i will be adding notes on how i use this repository as i learn more
 <br/>this is the line after "adding notes line"
 though this is written on next line, lets see how it renders
