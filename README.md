@@ -10,8 +10,7 @@ though this is written on next line, lets see how it renders
 * how to add code files
 * i do coding in scratch... 
 * NOTE: this is a line i added from my local machine
-* <mark>test another highlight</mark>
-*<mark>I am doing coding in school</mark>
+* <mark>test another highlight</mark> <mark>I am doing coding in school</mark>
 
 <!--
 **Novaarcoid0/Novaarcoid0** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
