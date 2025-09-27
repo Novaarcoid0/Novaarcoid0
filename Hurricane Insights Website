@@ -1,1 +1,524 @@
+//Html code:
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hurricane Insights</title>
+    <!--
+        Load Tailwind CSS from CDN for modern, responsive styling.
+        The 'Inter' font is used by default with Tailwind.
+    -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Chart.js for creating the interactive data visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom styles to enhance the look and feel */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light gray-blue background */
+        }
+        .container {
+            max-width: 1200px;
+        }
+        .card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .nav-link.active {
+            color: #1e40af; /* A slightly darker blue for active link */
+            border-bottom: 2px solid #1e40af; /* Highlight with a blue border */
+        }
+        /* Make the canvases even smaller */
+        canvas {
+            max-height: 250px !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
 
+    <!-- Header and Navigation Bar -->
+    <header class="bg-white shadow-lg py-4 fixed top-0 left-0 w-full z-10">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <!-- Brand/Logo -->
+            <a href="#" class="text-3xl font-bold text-gray-800">
+                <span class="text-blue-600">Hurricane</span>
+                <span class="text-red-600">Insights</span>
+            </a>
+
+            <!-- Navigation Links -->
+            <nav class="space-x-4 sm:space-x-8 text-lg font-medium">
+                <a href="#" class="nav-link text-gray-600 hover:text-blue-600 transition duration-300 active" data-target="home-section">Home</a>
+                <a href="#" class="nav-link text-gray-600 hover:text-blue-600 transition duration-300" data-target="past-hurricanes-section">Past Hurricanes</a>
+                <a href="#" class="nav-link text-gray-600 hover:text-blue-600 transition duration-300" data-target="hurricanes-101-section">101 & Prediction</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main content container with padding for the fixed header -->
+    <main class="pt-24 pb-8 container mx-auto px-4">
+
+        <!-- Home Page Section -->
+        <section id="home-section" class="page-section">
+            <div class="bg-white p-8 sm:p-12 rounded-2xl card text-center">
+                <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-900 mb-6 leading-tight">Welcome to Hurricane Insights</h1>
+                <p class="text-lg sm:text-xl text-gray-600 mb-8">Explore key data on historical hurricanes, learn the basics, and discover how these powerful storms are predicted. Our interactive charts bring the data to life.</p>
+                <a href="#" class="inline-block bg-blue-600 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-blue-700 transition duration-300 transform hover:scale-105" data-target="past-hurricanes-section">View the Data</a>
+            </div>
+        </section>
+
+        <!-- Past Hurricanes Section (initially hidden) -->
+        <section id="past-hurricanes-section" class="page-section hidden">
+            <!-- Grid for charts -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+                <!-- Card for Number of Hurricanes Chart -->
+                <div class="bg-white p-6 rounded-2xl card flex flex-col items-center justify-center">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Number of Hurricanes by Year</h2>
+                    <canvas id="numberOfHurricanesChart" class="w-full"></canvas>
+                    <p class="text-gray-500 text-sm mt-4 text-center">This bar chart shows the total number of hurricanes for each year from 1980 to 2025.</p>
+                </div>
+
+                <!-- Card for Max Wind Speed Chart -->
+                <div class="bg-white p-6 rounded-2xl card flex flex-col items-center justify-center">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Maximum Wind Speed by Year</h2>
+                    <canvas id="windSpeedChart" class="w-full"></canvas>
+                    <p class="text-gray-500 text-sm mt-4 text-center">A scatter plot visualizing the maximum sustained wind speed of the strongest hurricane each year.</p>
+                </div>
+
+                <!-- Card for Cost Chart -->
+                <div class="bg-white p-6 rounded-2xl card flex flex-col items-center justify-center">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Estimated Costs by Year</h2>
+                    <canvas id="costChart" class="w-full"></canvas>
+                    <p class="text-gray-500 text-sm mt-4 text-center">This line chart tracks the estimated economic costs (in billions of USD) from hurricane damages over time.</p>
+                </div>
+            </div>
+
+            <!-- Divider line to separate charts and list -->
+            <hr class="my-10 border-gray-300">
+
+            <!-- Card for Hurricane Names List -->
+            <div class="bg-white p-6 rounded-2xl card flex flex-col">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Notable Hurricanes (1980 - 2025)</h2>
+                <!-- Scrollable container for the list -->
+                <div id="hurricane-list-container" class="overflow-y-auto max-h-64 p-4 rounded-lg bg-gray-50 border border-gray-200">
+                    <!-- The list items will be dynamically added here by JavaScript -->
+                    <p class="text-center text-gray-400">Loading hurricane data...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hurricanes 101 & Prediction Section (initially hidden) -->
+        <section id="hurricanes-101-section" class="page-section hidden">
+            <div class="bg-white p-8 sm:p-12 rounded-2xl card">
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-6">Hurricanes 101: Formation & Prediction</h1>
+
+                <div class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-2">What is a Hurricane?</h2>
+                    <p class="text-gray-600 leading-relaxed">A hurricane is a type of tropical cyclone, a rapidly rotating storm system characterized by a low-pressure center, a closed low-level atmospheric circulation, strong winds, and a spiral arrangement of thunderstorms that produce heavy rain. They form over warm ocean waters and are known by different names depending on their location, such as typhoons in the Northwest Pacific and cyclones in the South Pacific and Indian Ocean.</p>
+                </div>
+
+                <div class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-2">How Hurricanes Form</h2>
+                    <p class="text-gray-600 leading-relaxed">The formation of a hurricane requires a few key ingredients: warm ocean water of at least 80°F (26.5°C), moist air, and a pre-existing weather disturbance. As warm, moist air rises from the ocean surface, it cools and condenses, forming clouds and releasing heat. This process fuels the storm, causing it to grow and organize into a rotating system. The rotation is driven by the Earth's rotation (Coriolis effect), which is why hurricanes do not form near the equator. The storm is classified as a hurricane when its sustained wind speeds reach 74 mph (119 km/h).</p>
+                </div>
+
+                <div class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-2">Hurricane Prediction</h2>
+                    <p class="text-600 leading-relaxed">Predicting hurricanes without expensive equipment is possible thanks to publicly available data and free forecasting tools. Start by monitoring sea surface temperatures and tropical disturbances using websites like NOAA’s National Hurricane Center or Windy.com, which offer real-time satellite imagery and storm tracking. Look for signs like organized cloud clusters, low-pressure systems, and warm ocean waters—key ingredients for hurricane formation. Free apps like MyRadar or Ventusky visualize wind patterns and pressure changes, helping you spot potential cyclones. You can also follow expert discussions on platforms like Tropical Tidbits, where meteorologists break down model predictions. While these tools don’t replace professional forecasts, they let you observe, analyze, and anticipate hurricane behavior with surprising accuracy. For additional resources, use <a href="https://weatheracademy.org" class="text-blue-600 hover:underline">weatheracademy.org</a></p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript for section navigation and chart generation -->
+    <script>
+        // Data derived directly from the user's provided Python code
+        const hurricaneData = {
+            years: Array.from({length: 46}, (_, i) => 1980 + i), // 1980 to 2025
+            numberOfHurricanes: [12, 11, 13, 11, 10, 8, 11, 14, 15, 12, 10, 10, 14, 13, 15, 15, 13, 10, 11, 14, 9, 11, 8, 11, 12, 10, 13, 8, 15, 6, 11, 10, 12, 11, 9, 13, 10, 11, 9, 12, 10, 13, 11, 14, 12, 16],
+            maxWindSpeed: [100, 102, 160, 111, 169, 105, 172, 103, 113, 141, 179, 167, 147, 139, 108, 177, 130, 176, 124, 103, 163, 142, 158, 161, 128, 103, 116, 122, 116, 164, 102, 163, 145, 129, 174, 122, 169, 128, 144, 176, 168, 160, 103, 104, 160, 174],
+            costUsdBillions: [64.24, 30.2, 85.39, 36.31, 82.26, 44.29, 90.03, 22.09, 16.33, 49.33, 139.75, 17.58, 117.89, 75.31, 41.51, 86.63, 173.23, 103.04, 135.26, 68.34, 124.64, 10.95, 153.53, 56.65, 117.2, 53.64, 141.69, 13.98, 93.39, 4.41, 120.25, 120.89, 21.07, 73.1, 134.82, 15.11, 97.46, 51.52, 13.78, 136.21, 3.48, 106.67, 17.58, 162.77, 122.95, 10.79],
+            // New data for the hurricane names list
+            hurricaneNames: [
+                { name: "Allen (1980)", category: 5 },
+                { name: "Alicia (1983)", category: 3 },
+                { name: "Gloria (1985)", category: 4 },
+                { name: "Gilbert (1988)", category: 5 },
+                { name: "Hugo (1989)", category: 4 },
+                { name: "Andrew (1992)", category: 5 },
+                { name: "Fran (1996)", category: 3 },
+                { name: "Mitch (1998)", category: 5 },
+                { name: "Floyd (1999)", category: 4 },
+                { name: "Isabel (2003)", category: 5 },
+                { name: "Katrina (2005)", category: 5 },
+                { name: "Ike (2008)", category: 4 },
+                { name: "Irene (2011)", category: 3 },
+                { name: "Sandy (2012)", category: 3 },
+                { name: "Matthew (2016)", category: 5 },
+                { name: "Irma (2017)", category: 5 },
+                { name: "Harvey (2017)", category: 4 },
+                { name: "Maria (2017)", category: 5 },
+                { name: "Florence (2018)", category: 4 },
+                { name: "Michael (2018)", category: 5 },
+                { name: "Dorian (2019)", category: 5 },
+                { name: "Laura (2020)", category: 4 },
+                { name: "Ian (2022)", category: 5 },
+                { name: "Idalia (2023)", category: 4 },
+                { name: "Helene (2024)", category: 4 },
+                { name: "Isaac (2024)", category: 2 },
+                { name: "Kirk (2024)", category: 5 },
+                { name: "Oscar (2024)", category: 1 },
+                { name: "Patty (2024)", category: 3 },
+                { name: "Rafael (2024)", category: 4 },
+                { name: "Erin (2025)", category: 5 }
+            ]
+        };
+
+        // Get references to all the main page sections
+        const sections = document.querySelectorAll('.page-section');
+        // Get references to all the navigation links
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        // Function to show a specific section and hide all others
+        function showSection(targetId) {
+            sections.forEach(section => {
+                // If the section's ID matches the target, remove the 'hidden' class
+                if (section.id === targetId) {
+                    section.classList.remove('hidden');
+                } else {
+                    // Otherwise, add the 'hidden' class to hide it
+                    section.classList.add('hidden');
+                }
+            });
+
+            // Update the 'active' class on the navigation links
+            navLinks.forEach(link => {
+                // If the link's data-target matches the target ID, add 'active'
+                if (link.dataset.target === targetId) {
+                    link.classList.add('active');
+                } else {
+                    // Otherwise, remove the 'active' class
+                    link.classList.remove('active');
+                }
+            });
+        }
+
+        // Function to dynamically create the hurricane list
+        function createHurricaneList() {
+            const listContainer = document.getElementById('hurricane-list-container');
+            // Clear any loading text
+            listContainer.innerHTML = '';
+
+            hurricaneData.hurricaneNames.forEach(hurricane => {
+                // Create a div for each list item
+                const listItem = document.createElement('div');
+                // Use Tailwind classes for styling the item
+                listItem.className = 'flex justify-between items-center p-3 my-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200';
+
+                // Create a span for the name
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'font-medium text-gray-700';
+                nameSpan.textContent = hurricane.name;
+
+                // Create a span for the category number
+                const categorySpan = document.createElement('span');
+                // Use different colors for different categories to add visual interest
+                let categoryColor = 'bg-gray-400';
+                if (hurricane.category === 5) {
+                    categoryColor = 'bg-red-500';
+                } else if (hurricane.category === 4) {
+                    categoryColor = 'bg-orange-500';
+                } else if (hurricane.category === 3) {
+                    categoryColor = 'bg-yellow-500';
+                } else if (hurricane.category === 2) {
+                    categoryColor = 'bg-lime-500';
+                } else if (hurricane.category === 1) {
+                    categoryColor = 'bg-green-500';
+                }
+                categorySpan.className = `inline-block w-8 h-8 rounded-full text-white font-bold text-center leading-8 ${categoryColor}`;
+                categorySpan.textContent = hurricane.category;
+
+                // Append the name and category spans to the list item
+                listItem.appendChild(nameSpan);
+                listItem.appendChild(categorySpan);
+
+                // Append the completed list item to the container
+                listContainer.appendChild(listItem);
+            });
+        }
+
+        // Add a click event listener to each navigation link
+        navLinks.forEach(link => {
+            link.addEventListener('click', (event) => {
+                event.preventDefault(); // Prevent default link behavior (page reload)
+                const targetId = event.target.dataset.target; // Get the target section ID from the data attribute
+                showSection(targetId); // Call the function to switch sections
+            });
+        });
+
+        // Initialize the charts and the hurricane list after the DOM is ready
+        window.onload = function() {
+            // ----- 1. Bar Chart: Number of Hurricanes -----
+            const numHurricanesCtx = document.getElementById('numberOfHurricanesChart').getContext('2d');
+            const numHurricanesChart = new Chart(numHurricanesCtx, {
+                type: 'bar',
+                data: {
+                    labels: hurricaneData.years,
+                    datasets: [{
+                        label: 'Number of Hurricanes',
+                        data: hurricaneData.numberOfHurricanes,
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)', // Tailwind blue-500 with alpha
+                        borderColor: 'rgb(37, 99, 235)', // Tailwind blue-600
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Hurricanes'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Year'
+                            },
+                            // Only show every 5th year for readability
+                            ticks: {
+                                autoSkip: true,
+                                maxTicksLimit: 10
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y + ' Hurricanes';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // ----- 2. Scatter Chart: Max Wind Speed -----
+            const windSpeedCtx = document.getElementById('windSpeedChart').getContext('2d');
+            const windSpeedChart = new Chart(windSpeedCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Max Wind Speed',
+                        data: hurricaneData.years.map((year, index) => ({
+                            x: year,
+                            y: hurricaneData.maxWindSpeed[index]
+                        })),
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgb(37, 99, 235)',
+                        borderWidth: 1,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'Year'
+                            },
+                            ticks: {
+                                stepSize: 5,
+                                autoSkip: false,
+                                callback: function(value, index, values) {
+                                    // Only show every 5th tick to match the Python chart
+                                    return value % 5 === 0 ? value : '';
+                                }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Max Wind Speed (mph)'
+                            },
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y + ' mph';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // ----- 3. Line Chart: Estimated Costs -----
+            const costCtx = document.getElementById('costChart').getContext('2d');
+            const costChart = new Chart(costCtx, {
+                type: 'line',
+                data: {
+                    labels: hurricaneData.years,
+                    datasets: [{
+                        label: 'Cost (USD Billions)',
+                        data: hurricaneData.costUsdBillions,
+                        borderColor: 'rgb(239, 68, 68)', // Tailwind red-500
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                        fill: 'origin', // Fill the area under the line
+                        tension: 0.2, // Add some curve to the line
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Cost (USD Billions)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Year'
+                            },
+                            // Only show every 5th year for readability
+                            ticks: {
+                                autoSkip: true,
+                                maxTicksLimit: 10
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += '$' + context.parsed.y.toFixed(2) + 'B';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Call the function to create the hurricane list
+            createHurricaneList();
+        };
+    </script>
+</body>
+</html>
+
+
+//Python code:
+import webbrowser
+import os
+import time
+import threading
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+import socket
+
+def get_free_port():
+    """Find a free port to use for the HTTP server."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(('', 0))
+        s.listen(1)
+        port = s.getsockname()[1]
+    return port
+
+def start_http_server(port):
+    """Start a simple HTTP server to serve the HTML file."""
+    class CustomHandler(SimpleHTTPRequestHandler):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, directory=os.getcwd(), **kwargs)
+
+    httpd = HTTPServer(('0.0.0.0', port), CustomHandler)
+    print(f"Starting HTTP server on port {port}")
+    httpd.serve_forever()
+
+def main():
+    # Get the current directory where the HTML file is located
+    current_dir = os.getcwd()
+    html_file = os.path.join(current_dir, "a code.html")
+
+    # Check if the HTML file exists
+    if not os.path.exists(html_file):
+        print(f"Error: HTML file '{html_file}' not found!")
+        return
+
+    # Find a free port for the HTTP server
+    port = get_free_port()
+
+    # Start the HTTP server in a separate thread
+    server_thread = threading.Thread(target=start_http_server, args=(port,))
+    server_thread.daemon = True
+    server_thread.start()
+
+    # Wait a moment for the server to start
+    time.sleep(2)
+
+    # Open the HTML file in the default web browser
+    url = f"http://localhost:{port}/a%20code.html"
+    print(f"Opening {url} in web browser...")
+
+    # This will open the browser through VNC
+    webbrowser.open(url)
+
+    print("HTML file opened in browser. The VNC window should now display the Hurricane Insights application.")
+    print("Press Ctrl+C to stop the server.")
+
+    try:
+        # Keep the main thread alive
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\nShutting down server...")
+
+if __name__ == "__main__":
+    main()
