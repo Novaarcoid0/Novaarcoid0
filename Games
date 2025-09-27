@@ -1,1 +1,61 @@
+import random
 
+print("Random library imported.")
+
+# List of words for our game
+word_list = [
+    "python", "coding", "library", "algorithm", "debugger", "function",
+    "variable", "string", "integer", "float", "boolean", "list", "tuple"
+]
+
+print(f"Word list with created words: {len(word_list)} words.")
+
+
+def play_hangman():
+    # Select a random word from the list
+    word = random.choice(word_list)
+    # print(f"Random word selected: {word}")
+    # Create a list of underscores to represent the word
+    display = ["_"] * len(word)
+    print(f"Display list created: {display}")
+    # Number of attempts allowed
+    attempts = 6
+    print(f"Number of attempts allowed: {attempts}")
+
+    # Game loop
+    while attempts > 0:
+        print(f"Attempts left: {attempts}")
+        print(" ".join(display))
+        guess = input("Guess a letter: ").lower()
+        if guess in word:
+            print("Correct guess!")
+            for i in range(len(word)):
+                if word[i] == guess:
+                    display[i] = guess
+            if "_" not in display:
+                print("Congratulations! You guessed the word!")
+                return True
+        else:
+            print("Wrong guess!")
+            attempts -= 1
+
+    if attempts == 0:
+        print("Game over! You ran out of attempts.")
+        print(f"The word was: {word}")
+        return False
+
+
+# Main game loop
+while True:
+    result = play_hangman()
+    if result:
+        play_again = input(
+            "Would you like to try another word? (yes/no): ").lower()
+        if play_again != 'yes':
+            print("Thanks for playing!")
+            break
+    else:
+        play_again = input("Would you like to try again? (yes/no): ").lower()
+        if play_again != 'yes':
+            print("Thanks for playing!")
+            break
