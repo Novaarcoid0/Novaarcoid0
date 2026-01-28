@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Yuvan and Research</title>
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+      /* King Tide Predictor Styles */
+      .predictor-container {
+        max-width: 900px;
+        margin: 20px auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+      }
+
+      .predictor-header {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .predictor-header h3 {
+        font-size: 2em;
+        margin-bottom: 10px;
+      }
+
+      .predictor-header p {
+        font-size: 0.95em;
+        opacity: 0.9;
+        line-height: 1.6;
+      }
+
+      .predictor-content {
+        padding: 30px;
+      }
+
+      .info-box {
+        background: #f0f4ff;
+        border-left: 4px solid #667eea;
+        padding: 15px;
+        margin-bottom: 25px;
+        border-radius: 5px;
+      }
+
+      .info-box p {
+        margin: 5px 0;
+        font-size: 0.9em;
+        color: #555;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .form-group input[type="date"],
+      .form-group input[type="number"],
+      .form-group select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1em;
+        transition: border-color 0.3s;
+      }
+
+      .form-group input[type="date"]:focus,
+      .form-group input[type="number"]:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .custom-threshold {
+        display: none;
+        margin-top: 15px;
+      }
+
+      .custom-threshold.visible {
+        display: block;
+      }
+
+      .predict-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        font-size: 1.1em;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        width: 100%;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .predict-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      .predict-button:active {
+        transform: translateY(0);
+      }
+
+      .predict-button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 20px;
+        color: #667eea;
+      }
+
+      .loading.visible {
+        display: block;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      .results {
+        display: none;
+        margin-top: 30px;
+      }
+
+      .results.visible {
+        display: block;
+      }
+
+      .results-header {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px 10px 0 0;
+        text-align: center;
+      }
+
+      .results-header h3 {
+        font-size: 1.5em;
+        margin-bottom: 10px;
+      }
+
+      .results-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        padding: 20px;
+        background: #f8f9fa;
+      }
+
+      .stat-card {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .stat-card .value {
+        font-size: 1.8em;
+        font-weight: bold;
+        color: #667eea;
+        margin-bottom: 5px;
+      }
+
+      .stat-card .label {
+        font-size: 0.9em;
+        color: #666;
+      }
+
+      .tide-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      .tide-table thead {
+        background: #f8f9fa;
+      }
+
+      .tide-table th,
+      .tide-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .tide-table th {
+        font-weight: 600;
+        color: #333;
+      }
+
+      .tide-table tbody tr:hover {
+        background: #f8f9fa;
+      }
+
+      .tide-table td:last-child {
+        font-weight: 600;
+        color: #667eea;
+      }
+
+      .no-results {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+      }
+
+      .no-results svg {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 15px;
+        opacity: 0.5;
+      }
+
+      .download-btn {
+        background: #28a745;
+        margin-top: 20px;
+        padding: 12px 25px;
+        font-size: 0.95em;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        width: 100%;
+        transition: background 0.3s;
+      }
+
+      .download-btn:hover {
+        background: #218838;
+      }
+
+      .error {
+        display: none;
+        background: #f8d7da;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #f5c6cb;
+        margin-bottom: 20px;
+      }
+
+      .error.visible {
+        display: block;
+      }
+
+      .warning {
+        display: none;
+        background: #fff3cd;
+        color: #856404;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #ffc107;
+        margin-bottom: 20px;
+      }
+
+      .warning.visible {
+        display: block;
+      }
+
+      .note {
+        margin-top: 20px;
+        padding: 15px;
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        border-radius: 5px;
+        font-size: 0.9em;
+        color: #856404;
+      }
+
+      .firewall-help {
+        margin-top: 20px;
+        padding: 15px;
+        background: #e7f3ff;
+        border-left: 4px solid #2196F3;
+        border-radius: 5px;
+        font-size: 0.9em;
+        color: #014361;
+      }
+
+      .firewall-help h4 {
+        margin-top: 0;
+        margin-bottom: 10px;
+      }
+
+      .firewall-help ul {
+        margin: 10px 0;
+        padding-left: 20px;
+      }
+
+      .firewall-help li {
+        margin: 5px 0;
+      }
+    </style>
+  </head>
+  <body style="background-color:LightGreen;">
+    <header>
+      <h1 class="title">Yuvan and Research</h1>
+      <nav class="tabs">
+        <a href="#" class="tab" onclick="showTab('home')">Home</a>
+        <a href="#" class="tab" onclick="showTab('research')">Research</a>
+        <a href="#" class="tab" onclick="showTab('contact')">Contact</a>
+        <a href="#" class="tab" onclick="showTab('predictor')">King Tide Predictor</a>
+      </nav>
+    </header>
+    <h1 class="title"> </h1>
+    <p id="currentTime"></p>
+    <script src="script.js"></script>
+      
+    <section id="home" class="tab-content">
+      <h2>All About Me</h2>
+      <p>I am Yuvan Rajpurkar and I started programming since I was in kindergarden. I started with block codes and moved on from there. I also love scince, more so the marine sciences and astronomy. I got a 100% in my first state assessment, the FSA or the Florida Statewide Assessment. During my elementary school years I was in my school's student council from 3rd grade till 5th grade. I was also in my middle school's student voice commitee when I was a 6th grader.</p>
+      
+      <h2 style="background-color:DodgerBlue;">Current Projects</h2>
+      
+      <p>I founded a club in my school for the marine sciences and astronomy. Right now, we are creating 3 telescopes woth NEFAS, or teh Northeast Florida Astronomical Society. Later on, we will innovate a shark tag for scientists at the Guana Tolomatos National Estuarine Research Reserve (GTMNERR).</p>
+        
+      <p>I also created some charts using R and Python. Those charts are in my Github repositories like the R codes repo and the Novaarcoid0 repository. I also created a hangman game in python which is in my Game Codes repository in Github.</p>
+      
+    </section>
+    <section id="research" class="tab-content" style="display:none;">
+      <h2 style="background-color:LightBlue;">Research Details</h2>
+      <p>This section contains all the scientific research I have done throughout my childhood.</p>
+      
+      <h2 style="background-color:SkyBlue;">Hurricanes and Carbon Monoxide Research Experiment</h2>
+      
+      <p>The table below depicts the data for my research on how hurricanes, like Huricane Erin (2025), affects the surrounding area's carbon monoxide. The source of data I used is in the link below:</p>
+      <a href="https://www.star.nesdis.noaa.gov/mapper">NOAA JSTAR Mapper</a>
+      
+      
+      <table>
+        <tr>
+          <th>Day</th>
+          <th>Carbon Monoxide (per meter squared)</th>
+          <th>Temperature (Kelvins)</th>
+        </tr>
+        <tr>
+          <td>August 16, 2025</td>
+          <td>0.0275</td>
+          <td>217.5</td>
+        </tr>
+        <tr>
+          <td>August 17, 2025</td>
+          <td>0.03</td>
+          <td>211.5</td>
+        </tr>
+        <tr>
+          <td>August 18, 2025</td>
+          <td>0.63</td>
+          <td>220</td>
+        </tr>
+        <tr>
+          <td>August 19, 2025</td>
+          <td>0.275</td>
+          <td>277.5</td>
+        </tr>
+      </table>
+    </section>
+    <section id="contact" class="tab-content" style="display:none;">
+      <h2>Contact Information</h2>
+      <p>My email is yrajpurkar11@gmail.com and my github account is Novaarcoid0. If yiu want to email me, please type in the question, who you are, and the reaseon you're emailing me.</p>
+    </section>
+
+    <!-- King Tide Predictor Section -->
+    <section id="predictor" class="tab-content" style="display:none;">
+      <div class="predictor-container">
+        <div class="predictor-header">
+          <h3>🌊 King Tide Predictor</h3>
+          <p>Jacksonville, FL</p>
+          <p style="font-size: 0.85em; margin-top: 10px;">
+            King tides are exceptionally high tides that occur when the sun<br>
+            and moon's gravitational forces reinforce each other.
+          </p>
+        </div>
+
+        <div class="predictor-content">
+          <div class="info-box">
+            <p><strong>📍 NOAA Station:</strong> 8720030 (Jacksonville, Mayport)</p>
+            <p><strong>📏 Datum:</strong> Mean Lower Low Water (MLLW)</p>
+            <p><strong>📊 Method:</strong> Identifies the highest percentage of predicted high tides</p>
+          </div>
+
+          <div class="warning" id="warningBox"></div>
+          <div class="error" id="errorBox"></div>
+
+          <form id="tideForm">
+            <div class="form-group">
+              <label for="startDate">Start Date:</label>
+              <input type="date" id="startDate" required>
+            </div>
+
+            <div class="form-group">
+              <label for="endDate">End Date:</label>
+              <input type="date" id="endDate" required>
+            </div>
+
+            <div class="form-group">
+              <label for="thresholdType">Threshold Type:</label>
+              <select id="thresholdType">
+                <option value="90">Default (90th percentile - highest 10%)</option>
+                <option value="custom">Custom Percentile</option>
+              </select>
+            </div>
+
+            <div class="custom-threshold" id="customThresholdInput">
+              <label for="customPercentile">Custom Percentile (0-100):</label>
+              <input type="number" id="customPercentile" min="0" max="100" step="1" value="90">
+            </div>
+
+            <button type="submit" class="predict-button">Predict King Tides</button>
+          </form>
+
+          <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Fetching tide data from NOAA...</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">Trying multiple connection methods...</p>
+          </div>
+
+          <div class="results" id="results">
+            <div class="results-header">
+              <h3>King Tide Predictions</h3>
+              <p id="dateRangeDisplay"></p>
+            </div>
+
+            <div class="results-stats">
+              <div class="stat-card">
+                <div class="value" id="thresholdValue">-</div>
+                <div class="label">Threshold (feet)</div>
+              </div>
+              <div class="stat-card">
+                <div class="value" id="kingTideCount">-</div>
+                <div class="label">King Tides Found</div>
+              </div>
+            </div>
+
+            <div id="tideTableContainer"></div>
+
+            <button class="download-btn" id="downloadBtn">📥 Download Results (JSON)</button>
+
+            <div class="note">
+              <strong>Note:</strong> Heights are measured above Mean Lower Low Water (MLLW).
+              King tides represent the highest percentage of predicted high tides based on your selected threshold.
+            </div>
+          </div>
+
+          <div class="firewall-help">
+            <h4>🔒 Having trouble connecting?</h4>
+            <p>If the predictor isn't working at school/work, it may be due to firewall restrictions. Here are some options:</p>
+            <ul>
+              <li><strong>Use on mobile data:</strong> Try using your phone's data connection instead of the school/work WiFi</li>
+              <li><strong>Access from home:</strong> The tool will work on unrestricted networks</li>
+              <li><strong>Ask IT department:</strong> Request access to <code>api.tidesandcurrents.noaa.gov</code></li>
+              <li><strong>Alternative:</strong> Visit <a href="https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id=8720030" target="_blank">NOAA's official site</a> directly</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      function showTab(tabId) {
+        const tabs = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => {
+          tab.style.display = (tab.id === tabId) ? 'block' : 'none';
+        });
+      }
+
+      // King Tide Predictor JavaScript
+      (function() {
+        // Set default dates (today and 30 days from now)
+        const today = new Date();
+        const futureDate = new Date(today);
+        futureDate.setDate(today.getDate() + 30);
+
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        
+        if (startDateInput && endDateInput) {
+          startDateInput.valueAsDate = today;
+          endDateInput.valueAsDate = futureDate;
+        }
+
+        // Handle custom threshold toggle
+        const thresholdTypeSelect = document.getElementById('thresholdType');
+        if (thresholdTypeSelect) {
+          thresholdTypeSelect.addEventListener('change', function() {
+            const customInput = document.getElementById('customThresholdInput');
+            if (this.value === 'custom') {
+              customInput.classList.add('visible');
+            } else {
+              customInput.classList.remove('visible');
+            }
+          });
+        }
+
+        // Main form submission
+        const tideForm = document.getElementById('tideForm');
+        if (tideForm) {
+          tideForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const thresholdType = document.getElementById('thresholdType').value;
+            const customPercentile = document.getElementById('customPercentile').value;
+
+            // Validate dates
+            if (new Date(endDate) < new Date(startDate)) {
+              showError('End date must be after start date.');
+              return;
+            }
+
+            const daysDiff = (new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24);
+            if (daysDiff > 365) {
+              if (!confirm('Date range exceeds 1 year. This may take a moment. Continue?')) {
+                return;
+              }
+            }
+
+            const threshold = thresholdType === 'custom' ? parseFloat(customPercentile) : 90;
+
+            // Show loading, hide results and errors
+            document.getElementById('loading').classList.add('visible');
+            document.getElementById('results').classList.remove('visible');
+            document.getElementById('errorBox').classList.remove('visible');
+            document.getElementById('warningBox').classList.remove('visible');
+
+            try {
+              const tideData = await fetchTideData(startDate, endDate);
+              const { kingTides, thresholdHeight } = identifyKingTides(tideData, threshold);
+              displayResults(kingTides, thresholdHeight, startDate, endDate, threshold);
+            } catch (error) {
+              showError(error.message);
+            } finally {
+              document.getElementById('loading').classList.remove('visible');
+            }
+          });
+        }
+
+        async function fetchTideData(startDate, endDate) {
+          const formatDate = (date) => date.replace(/-/g, '');
+          const start = formatDate(startDate);
+          const end = formatDate(endDate);
+          
+          const params = new URLSearchParams({
+            product: 'predictions',
+            application: 'NOS.COOPS.TAC.WL',
+            begin_date: start,
+            end_date: end,
+            datum: 'MLLW',
+            station: '8720030',
+            time_zone: 'lst_ldt',
+            units: 'english',
+            interval: 'hilo',
+            format: 'json'
+          });
+
+          // List of URLs to try (direct and CORS proxies)
+          const urlsToTry = [
+            `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?${params}`,
+            `https://corsproxy.io/?${encodeURIComponent('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?' + params)}`,
+            `https://api.allorigins.win/raw?url=${encodeURIComponent('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?' + params)}`
+          ];
+
+          let lastError;
+          
+          // Try each URL in sequence
+          for (let i = 0; i < urlsToTry.length; i++) {
+            try {
+              console.log(`Attempting connection method ${i + 1}...`);
+              
+              const response = await fetch(urlsToTry[i], {
+                method: 'GET',
+                mode: 'cors',
+                cache: 'default'
+              });
+
+              if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+              }
+
+              const data = await response.json();
+
+              if (data.error) {
+                throw new Error(data.error.message || 'API returned an error');
+              }
+
+              if (!data.predictions || data.predictions.length === 0) {
+                throw new Error('No tide data available for the selected date range');
+              }
+
+              // Success! Show warning if we had to use a proxy
+              if (i > 0) {
+                showWarning('Connected using alternative method. Direct access may be blocked by your network firewall.');
+              }
+
+              return data.predictions;
+
+            } catch (error) {
+              console.error(`Method ${i + 1} failed:`, error);
+              lastError = error;
+              // Continue to next method
+            }
+          }
+
+          // All methods failed
+          throw new Error(
+            'Unable to connect to NOAA servers. This is likely due to your network firewall blocking external API requests. ' +
+            'Please try using mobile data, connecting from home, or ask your IT department to whitelist api.tidesandcurrents.noaa.gov'
+          );
+        }
+
+        function identifyKingTides(tideData, thresholdPercentile) {
+          // Filter for high tides only
+          const highTides = tideData.filter(tide => tide.type === 'H');
+
+          if (highTides.length === 0) {
+            return { kingTides: [], thresholdHeight: 0 };
+          }
+
+          // Extract and sort heights
+          const heights = highTides.map(tide => parseFloat(tide.v));
+          const sortedHeights = [...heights].sort((a, b) => a - b);
+
+          // Calculate threshold
+          const thresholdIndex = Math.floor(sortedHeights.length * (thresholdPercentile / 100));
+          const thresholdHeight = sortedHeights[Math.min(thresholdIndex, sortedHeights.length - 1)];
+
+          // Identify king tides
+          const kingTides = highTides
+            .filter(tide => parseFloat(tide.v) >= thresholdHeight)
+            .map(tide => ({
+              date: tide.t,
+              height: parseFloat(tide.v)
+            }));
+
+          return { kingTides, thresholdHeight };
+        }
+
+        function displayResults(kingTides, thresholdHeight, startDate, endDate, threshold) {
+          document.getElementById('results').classList.add('visible');
+          document.getElementById('dateRangeDisplay').textContent = 
+            `${startDate} to ${endDate} (${threshold}th percentile)`;
+          document.getElementById('thresholdValue').textContent = thresholdHeight.toFixed(2);
+          document.getElementById('kingTideCount').textContent = kingTides.length;
+
+          const container = document.getElementById('tideTableContainer');
+
+          if (kingTides.length === 0) {
+            container.innerHTML = `
+              <div class="no-results">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+                <h3>No King Tides Found</h3>
+                <p>No king tides predicted for this date range with the selected threshold.</p>
+              </div>
+            `;
+          } else {
+            let tableHTML = `
+              <table class="tide-table">
+                <thead>
+                  <tr>
+                    <th>Date & Time</th>
+                    <th>Height (feet above MLLW)</th>
+                  </tr>
+                </thead>
+                <tbody>
+            `;
+
+            kingTides.forEach(tide => {
+              tableHTML += `
+                <tr>
+                  <td>${tide.date}</td>
+                  <td>${tide.height.toFixed(2)}</td>
+                </tr>
+              `;
+            });
+
+            tableHTML += `
+                </tbody>
+              </table>
+            `;
+
+            container.innerHTML = tableHTML;
+          }
+
+          // Store data for download
+          window.currentResults = {
+            location: 'Jacksonville, FL (Mayport)',
+            station_id: '8720030',
+            date_range: {
+              start: startDate,
+              end: endDate
+            },
+            threshold: thresholdHeight,
+            threshold_percentile: threshold,
+            king_tides: kingTides
+          };
+        }
+
+        function showError(message) {
+          const errorBox = document.getElementById('errorBox');
+          errorBox.textContent = `⚠️ Error: ${message}`;
+          errorBox.classList.add('visible');
+        }
+
+        function showWarning(message) {
+          const warningBox = document.getElementById('warningBox');
+          warningBox.textContent = `⚠️ ${message}`;
+          warningBox.classList.add('visible');
+        }
+
+        // Download results
+        const downloadBtn = document.getElementById('downloadBtn');
+        if (downloadBtn) {
+          downloadBtn.addEventListener('click', function() {
+            if (!window.currentResults) return;
+
+            const dataStr = JSON.stringify(window.currentResults, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `king_tides_${window.currentResults.date_range.start}_${window.currentResults.date_range.end}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>
